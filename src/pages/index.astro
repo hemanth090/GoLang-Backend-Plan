@@ -1,0 +1,1563 @@
+---
+// Interactive 4-week "Learn Go for Backend" plan.
+// All plan content lives in the data below; interactivity is vanilla JS
+// in the bundled <script> at the bottom (progress + quiz state in localStorage).
+
+interface Resource {
+  label: string;
+  url: string;
+}
+interface Day {
+  title: string;
+  goal: string;
+  topics: string[];
+  exercise: string;
+  tasks: string[];
+  resources: Resource[];
+}
+interface QuizQ {
+  q: string;
+  options: string[];
+  answer: number;
+}
+interface Week {
+  name: string;
+  theme: string;
+  blurb: string;
+  days: Day[];
+  quiz: QuizQ[];
+}
+
+const plan: Week[] = [
+  {
+    name: 'Week 1',
+    theme: 'Go Fundamentals for Backend',
+    blurb:
+      'Get productive in Go fast: syntax, structs and interfaces, idiomatic error handling, and concurrency. The exact building blocks every Go backend service uses. You finish the week serving your first HTTP endpoints.',
+    days: [
+      {
+        title: 'Setup, modules & first program',
+        goal: 'Install the toolchain and learn the Go workflow: go mod, go run, go build, go fmt.',
+        topics: ['Installing Go', 'go mod init & go.mod', 'go run / build / fmt / vet', 'Project layout'],
+        exercise:
+          'Write a CLI "greeting" app: reads a name from a command-line flag and prints a formatted greeting. Build a real binary with go build and run it.',
+        tasks: [
+          'Install Go 1.23+ and verify with go version',
+          'go mod init a module and run a hello-world with go run',
+          'Format and vet your code with go fmt and go vet',
+        ],
+        resources: [
+          { label: 'Download Go', url: 'https://go.dev/dl/' },
+          { label: 'How to Write Go Code', url: 'https://go.dev/doc/code' },
+        ],
+      },
+      {
+        title: 'Types, collections & control flow',
+        goal: 'Master the everyday data shapes of backend code: slices, maps, structs-by-value, and loops.',
+        topics: ['Basic types & zero values', 'Slices & maps', 'for / switch / if-with-init', 'defer'],
+        exercise:
+          'Build a word-frequency counter: read a paragraph, split it, and print the top-10 words using a map[string]int and sort.',
+        tasks: [
+          'Complete "Basics" section of A Tour of Go',
+          'Write the word-frequency counter exercise',
+          'Break a slice deliberately (index out of range) and read the panic',
+        ],
+        resources: [{ label: 'A Tour of Go', url: 'https://go.dev/tour/' }],
+      },
+      {
+        title: 'Structs, methods & interfaces',
+        goal: 'Learn Go\u2019s composition-over-inheritance model, the core of idiomatic backend design.',
+        topics: ['Structs & embedding', 'Value vs pointer receivers', 'Interfaces satisfied implicitly', 'fmt.Stringer'],
+        exercise:
+          'Model shapes (circle, rectangle) with an Area() interface, then add a String() method to satisfy fmt.Stringer and print them nicely.',
+        tasks: [
+          'Complete "Methods and interfaces" section of A Tour of Go',
+          'Implement the shapes Area interface exercise',
+          'Refactor one struct to use a pointer receiver and explain why',
+        ],
+        resources: [
+          { label: 'Go by Example: Interfaces', url: 'https://gobyexample.com/interfaces' },
+          { label: 'Go blog: Methods & interfaces', url: 'https://go.dev/doc/effective_go#interfaces' },
+        ],
+      },
+      {
+        title: 'Errors the Go way',
+        goal: 'Error handling is a first-class design skill in Go backends: wrapping, sentinel errors, and errors.Is/As.',
+        topics: ['error interface', 'fmt.Errorf with %w', 'errors.Is / errors.As', 'Custom error types', 'panic vs error'],
+        exercise:
+          'Write a config-file parser that returns wrapped errors: a sentinel ErrNotFound plus a custom ValidationError type, and match them with errors.Is/As.',
+        tasks: [
+          'Read the Go blog post on error handling',
+          'Implement the config parser with wrapped errors',
+          'Replace one panic in earlier code with a returned error',
+        ],
+        resources: [
+          { label: 'Go blog: Working with Errors', url: 'https://go.dev/blog/go1.13-errors' },
+          { label: 'Go by Example: Errors', url: 'https://gobyexample.com/errors' },
+        ],
+      },
+      {
+        title: 'Goroutines, channels & context',
+        goal: 'Concurrency is Go\u2019s superpower for backend throughput. Learn goroutines, channels, WaitGroups and context.',
+        topics: ['go keyword', 'Channels & select', 'sync.WaitGroup', 'context.Context & timeouts'],
+        exercise:
+          'Fetch 5 URLs concurrently with goroutines, collect results through a channel, cancel the whole batch with a 2-second context timeout.',
+        tasks: [
+          'Complete "Concurrency" section of A Tour of Go',
+          'Write the concurrent URL fetcher with WaitGroup',
+          'Add a context timeout that cancels slow fetches',
+        ],
+        resources: [
+          { label: 'Go blog: Go Concurrency Patterns', url: 'https://go.dev/blog/pipelines' },
+          { label: 'Go blog: Context and structs', url: 'https://go.dev/blog/context' },
+        ],
+      },
+      {
+        title: 'Packages, testing & tooling',
+        goal: 'Table-driven tests are the Go standard. Learn go test before you write your first server.',
+        topics: ['Package layout', 'go test', 'Table-driven tests', 'Test coverage'],
+        exercise:
+          'Write table-driven tests for your Day 2 word-frequency counter, including edge cases (empty input, punctuation, ties).',
+        tasks: [
+          'Write table-driven tests for the word counter',
+          'Run go test -cover and push coverage above 80%',
+          'Split your code into two packages (logic + main)',
+        ],
+        resources: [
+          { label: 'Testing in Go (go.dev)', url: 'https://go.dev/doc/tutorial/add-a-test' },
+          { label: 'TableDrivenTests wiki', url: 'https://go.dev/wiki/TableDrivenTests' },
+        ],
+      },
+      {
+        title: 'Your first HTTP server',
+        goal: 'Ship a real server with the standard library only. No framework needed for Go backends.',
+        topics: ['net/http & HandlerFunc', 'ServeMux routing (Go 1.22 patterns)', 'Serving JSON', 'Graceful shutdown intro'],
+        exercise:
+          'Build a server with GET /healthz (plain 200 OK) and GET /hello?name=X returning {"message": "Hello X"} as JSON. Run it and curl it.',
+        tasks: [
+          'Implement /healthz and /hello endpoints',
+          'Return proper Content-Type: application/json',
+          'Review Week 1 and list your 3 weakest spots',
+        ],
+        resources: [
+          { label: 'net/http package docs', url: 'https://pkg.go.dev/net/http' },
+          { label: 'Go 1.22 ServeMux patterns', url: 'https://go.dev/blog/routing-enhancements' },
+        ],
+      },
+    ],
+    quiz: [
+      {
+        q: 'Which keyword launches a goroutine?',
+        options: ['async', 'go', 'spawn', 'thread'],
+        answer: 1,
+      },
+      {
+        q: 'How do you wrap an error with extra context while preserving the original?',
+        options: [
+          'errors.New("ctx: " + err.Error())',
+          'fmt.Errorf("ctx: %v", err)',
+          'fmt.Errorf("ctx: %w", err)',
+          'panic(err)',
+        ],
+        answer: 2,
+      },
+      {
+        q: 'A send on an unbuffered channel blocks until…',
+        options: [
+          'the channel is closed',
+          'another goroutine receives the value',
+          'the buffer has space',
+          'it never blocks',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'In Go, a type satisfies an interface…',
+        options: [
+          'only by declaring that it implements it',
+          'by implementing all its methods implicitly',
+          'by inheriting from a base class',
+          'via generics',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'What does `go mod init example.com/app` do?',
+        options: [
+          'Installs all dependencies',
+          'Creates go.mod, declaring the module path',
+          'Publishes the module',
+          'Creates a monorepo',
+        ],
+        answer: 1,
+      },
+    ],
+  },
+  {
+    name: 'Week 2',
+    theme: 'HTTP APIs & Kafka Foundations',
+    blurb:
+      'Build a production-shaped REST API with routing, middleware, validation and tests, then make it event-driven by producing your first Kafka messages from Go. This is the core "HTTP requests / APIs" skill from the job description.',
+    days: [
+      {
+        title: 'REST design & routing',
+        goal: 'Design resource-oriented endpoints and map them to Go 1.22 ServeMux patterns.',
+        topics: ['REST principles & status codes', 'Method + path patterns', 'Path values', 'API versioning'],
+        exercise:
+          'Create the routing skeleton for a Notes API: GET/POST /notes, GET/PUT/DELETE /notes/{id}. Stub handlers returning correct status codes.',
+        tasks: [
+          'Register all 5 routes with method patterns',
+          'Return 201, 204 and 404 from the right handlers',
+          'Read the HTTP status-code cheat sheet',
+        ],
+        resources: [
+          { label: 'MDN: HTTP status codes', url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status' },
+          { label: 'Go routing enhancements', url: 'https://go.dev/blog/routing-enhancements' },
+        ],
+      },
+      {
+        title: 'JSON in and out',
+        goal: 'Move JSON payloads correctly: struct tags, decoding into typed structs, and clean error responses.',
+        topics: ['encoding/json', 'Struct tags', 'json.NewDecoder', 'JSON error bodies'],
+        exercise:
+          'Wire up POST /notes to decode a {"title","body"} JSON body and store it in an in-memory map; GET /notes/{id} returns it as JSON.',
+        tasks: [
+          'Decode POST body into a Note struct',
+          'Return 400 with a JSON error body on malformed JSON',
+          'Add created_at/updated_at fields with JSON tags',
+        ],
+        resources: [
+          { label: 'Go by Example: JSON', url: 'https://gobyexample.com/json' },
+          { label: 'encoding/json docs', url: 'https://pkg.go.dev/encoding/json' },
+        ],
+      },
+      {
+        title: 'Middleware & logging',
+        goal: 'Cross-cutting concerns (logging, recovery, request IDs) belong in middleware, a Go\u2019s handler-wrapping pattern.',
+        topics: ['Wrapping http.Handler', 'Recovery middleware', 'Request logging', 'Request IDs & timing'],
+        exercise:
+          'Write a middleware chain: recover from panics (500 instead of crash), log method/path/status/duration for every request.',
+        tasks: [
+          'Implement logging middleware with time.Since',
+          'Implement panic-recovery middleware',
+          'Chain them and test with a deliberately panicking route',
+        ],
+        resources: [
+          { label: 'Go blog: JSON and Go', url: 'https://go.dev/blog/json-and-go' },
+          { label: 'log/slog docs', url: 'https://pkg.go.dev/log/slog' },
+        ],
+      },
+      {
+        title: 'Validation, config & graceful shutdown',
+        goal: 'Harden the API: validate input, configure from environment, and shut down without dropping requests.',
+        topics: ['Input validation', 'os.Getenv / env config', 'signal.NotifyContext', 'server.Shutdown'],
+        exercise:
+          'Reject empty/too-long note titles (422), read PORT from env, and handle SIGTERM by draining in-flight requests within 5 seconds.',
+        tasks: [
+          'Validate note payloads and return 422',
+          'Move host/port into environment config',
+          'Add graceful shutdown on SIGTERM/SIGINT',
+        ],
+        resources: [
+          { label: 'Signal NotifyContext example', url: 'https://pkg.go.dev/os/signal#NotifyContext' },
+          { label: 'http.Server.Shutdown', url: 'https://pkg.go.dev/net/http#Server.Shutdown' },
+        ],
+      },
+      {
+        title: 'Testing APIs with httptest',
+        goal: 'Test handlers without a real port using httptest, the standard for Go API test suites.',
+        topics: ['httptest.NewRequest', 'httptest.NewRecorder', 'Testing middleware', 'Integration test layout'],
+        exercise:
+          'Write a full test suite for the Notes API: happy paths for all 5 routes plus 400/404/422 cases, using a fresh store per test.',
+        tasks: [
+          'Test every endpoint happy path',
+          'Test 404 and 400/422 error cases',
+          'Run go test ./... green',
+        ],
+        resources: [
+          { label: 'httptest package', url: 'https://pkg.go.dev/net/http/httptest' },
+          { label: 'Go wiki: httptest examples', url: 'https://go.dev/wiki/HttpTest' },
+        ],
+      },
+      {
+        title: 'Kafka fundamentals',
+        goal: 'Understand the event-streaming model that modern data platforms (Kafka, and downstream Snowflake/Databricks) are built on.',
+        topics: ['Topics, partitions & offsets', 'Producer / consumer model', 'Consumer groups', 'Kafka vs queues (RabbitMQ)'],
+        exercise:
+          'Run Kafka locally with Docker Compose (Bitnami single-node or Redpanda), then produce and consume test messages with kcat / redpanda-cli.',
+        tasks: [
+          'Start Kafka via docker-compose',
+          'Create a topic with 3 partitions',
+          'Produce and consume messages from the CLI',
+        ],
+        resources: [
+          { label: 'Kafka: core concepts', url: 'https://kafka.apache.org/documentation/#gettingStarted' },
+          { label: 'Redpanda quickstart (easy local Kafka)', url: 'https://docs.redpanda.com/current/get-started/quick-start/' },
+        ],
+      },
+      {
+        title: 'Kafka in Go + mini-project',
+        goal: 'Make the Notes API event-driven: emit domain events to Kafka and consume them in a worker.',
+        topics: ['segmentio/kafka-go', 'Producing JSON events', 'Consumer loop', 'Committing offsets'],
+        exercise:
+          'On every successful POST /notes, publish a note.created event to Kafka; write a consumer that reads events and logs them with slog.',
+        tasks: [
+          'Produce note.created events from the API',
+          'Write a consumer that logs each event',
+          'Mini-project review: API + events working end to end',
+        ],
+        resources: [
+          { label: 'segmentio/kafka-go', url: 'https://github.com/segmentio/kafka-go' },
+          { label: 'franz-go (production-grade client)', url: 'https://github.com/twmb/franz-go' },
+        ],
+      },
+    ],
+    quiz: [
+      {
+        q: 'In Go 1.22 ServeMux, how do you read {id} from the pattern "/notes/{id}"?',
+        options: ['r.URL.Query().Get("id")', 'r.PathValue("id")', 'r.Header.Get("id")', 'mux.Vars(r)["id"]'],
+        answer: 1,
+      },
+      {
+        q: 'A POST that successfully creates a resource should return…',
+        options: ['200 OK', '201 Created', '202 Accepted', '204 No Content'],
+        answer: 1,
+      },
+      {
+        q: 'What is middleware in Go HTTP servers?',
+        options: [
+          'A database driver',
+          'A handler that wraps another handler to add cross-cutting behavior',
+          'A reverse proxy',
+          'The router',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'In a Kafka consumer group with 3 consumers and a 6-partition topic…',
+        options: [
+          'Every consumer gets every message',
+          'Each partition is assigned to exactly one consumer in the group',
+          'Messages are load-balanced per message',
+          'Consumers must poll in lockstep',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'What does httptest.NewRecorder() give you?',
+        options: [
+          'A real listening server',
+          'An http.ResponseWriter that records the response for assertions',
+          'A metrics recorder',
+          'A request logger',
+        ],
+        answer: 1,
+      },
+    ],
+  },
+  {
+    name: 'Week 3',
+    theme: 'Databases, Notifications & Data Platforms',
+    blurb:
+      'Persist with Postgres, cache and rate-limit with Redis, go deeper on Kafka (retries, DLQs, idempotency), then cover the job-description stack: notification system design, Snowflake, and Databricks.',
+    days: [
+      {
+        title: 'Postgres with pgx',
+        goal: 'Move from in-memory to a real database using pgx, the de-facto Go Postgres driver.',
+        topics: ['pgxpool connection pool', 'Parameterized queries', 'Migrations (golang-migrate)', 'Dockerized Postgres'],
+        exercise:
+          'Add Postgres via docker-compose, create a notes table with a migration, and switch the Notes API to read/write through pgxpool.',
+        tasks: [
+          'Run Postgres in docker-compose with a healthcheck',
+          'Create the notes table via a migration tool',
+          'Replace the in-memory store with pgxpool queries',
+        ],
+        resources: [
+          { label: 'jackc/pgx', url: 'https://github.com/jackc/pgx' },
+          { label: 'golang-migrate', url: 'https://github.com/golang-migrate/migrate' },
+        ],
+      },
+      {
+        title: 'sqlc & the repository pattern',
+        goal: 'Write type-safe SQL with sqlc and isolate data access behind a repository interface.',
+        topics: ['sqlc code generation', 'Transactions', 'Repository interface', 'Context propagation'],
+        exercise:
+          'Define your queries in .sql files, generate typed Go with sqlc, and hide it behind a NoteRepository interface so handlers never touch SQL.',
+        tasks: [
+          'Generate Go code from SQL with sqlc',
+          'Define and use a NoteRepository interface',
+          'Wrap create-note + event-publish in one transaction',
+        ],
+        resources: [
+          { label: 'sqlc docs', url: 'https://docs.sqlc.dev/' },
+          { label: 'Go blog: Failing Forward / transaction patterns', url: 'https://go.dev/doc/database/transactions' },
+        ],
+      },
+      {
+        title: 'Redis: caching & rate limiting',
+        goal: 'Two classic backend patterns in one day: cache-aside reads and token-bucket rate limiting.',
+        topics: ['go-redis client', 'Cache-aside pattern', 'TTLs & invalidation', 'Rate-limit middleware'],
+        exercise:
+          'Cache GET /notes/{id} in Redis with a 60s TTL (invalidate on update), and add middleware that limits each client to 10 req/s.',
+        tasks: [
+          'Implement cache-aside for note reads',
+          'Invalidate cache on PUT/DELETE',
+          'Add and test the rate-limit middleware',
+        ],
+        resources: [
+          { label: 'go-redis', url: 'https://github.com/redis/go-redis' },
+          { label: 'Rate limiting patterns', url: 'https://redis.io/docs/latest/develop/use-patterns/rate-limiter/' },
+        ],
+      },
+      {
+        title: 'Kafka deep dive: reliability',
+        goal: 'Real pipelines need failure thinking: at-least-once delivery, retries, dead-letter queues, idempotent consumers.',
+        topics: ['Delivery semantics', 'Retries & backoff', 'Dead-letter topics', 'Idempotency keys'],
+        exercise:
+          'Add a consumer that fails on malformed events: retry 3 times with backoff, then publish to note.events.DLQ with the error attached.',
+        tasks: [
+          'Add retry with exponential backoff to a consumer',
+          'Route exhausted events to a DLQ topic',
+          'Make your note consumer idempotent (skip duplicates)',
+        ],
+        resources: [
+          { label: 'Confluent: error handling & DLQ', url: 'https://developer.confluent.io/courses/kafka-python/error-handling/' },
+          { label: 'Kafka delivery semantics', url: 'https://www.confluent.io/blog/kafka-data-delivery-semantics/' },
+        ],
+      },
+      {
+        title: 'Notification systems: email & web push',
+        goal: 'Design the notification pipeline the job asks for: events in Kafka, a worker fans out to email/web-push with dedupe and user preferences.',
+        topics: ['Notification service architecture', 'Email via SMTP', 'Web Push (VAPID + service workers)', 'Deduping & preferences & batching'],
+        exercise:
+          'Write a Kafka consumer that sends a welcome email through MailHog (local SMTP) on user.created events; sketch the architecture diagram for a web-push pipeline.',
+        tasks: [
+          'Run MailHog locally and send an email from Go (net/smtp)',
+          'Consume user.created events and send welcome emails',
+          'Write a 1-page design doc: push notification flow end to end',
+        ],
+        resources: [
+          { label: 'Web Push protocol (RFC 8291)', url: 'https://datatracker.ietf.org/doc/html/rfc8291' },
+          { label: 'VAPID (RFC 8292)', url: 'https://datatracker.ietf.org/doc/html/rfc8292' },
+          { label: 'MailHog', url: 'https://github.com/mailhog/MailHog' },
+        ],
+      },
+      {
+        title: 'Snowflake: analytics warehouse + Go',
+        goal: 'Learn what a cloud data warehouse is and load/query it from Go, the analytics side of backend/full-stack roles.',
+        topics: ['Warehouses, databases, schemas', 'Stages & COPY INTO', 'gofrs/snowflake Go driver', 'When to use Snowflake'],
+        exercise:
+          'Sign up for a Snowflake trial, export note-event stats to CSV, put it on a stage, COPY INTO a table, then query it from a small Go program using the Snowflake driver.',
+        tasks: [
+          'Create a trial account + warehouse',
+          'Load a CSV via stage + COPY INTO',
+          'Query the table from Go with gofrs/snowflake',
+        ],
+        resources: [
+          { label: 'Snowflake docs', url: 'https://docs.snowflake.com/' },
+          { label: 'snowflakedb/gosnowflake driver', url: 'https://github.com/snowflakedb/gosnowflake' },
+        ],
+      },
+      {
+        title: 'Databricks & the lakehouse',
+        goal: 'Understand the lakehouse model (Delta Lake + Spark) and when teams choose Databricks vs Snowflake.',
+        topics: ['Lakehouse vs warehouse', 'Delta Lake tables', 'Notebooks, clusters & jobs', 'Spark basics', 'Snowflake vs Databricks'],
+        exercise:
+          'Explore the Databricks Free Edition: create a notebook that reads a Parquet/Delta file of note events and computes events-per-day with Spark SQL.',
+        tasks: [
+          'Sign up for Databricks Free Edition',
+          'Run a notebook with Spark SQL aggregations',
+          'Write a short comparison: Snowflake vs Databricks for our stack',
+        ],
+        resources: [
+          { label: 'Databricks docs', url: 'https://docs.databricks.com/' },
+          { label: 'Delta Lake', url: 'https://delta.io/' },
+        ],
+      },
+    ],
+    quiz: [
+      {
+        q: 'In the cache-aside pattern, on a cache miss the application should…',
+        options: [
+          'Return an error to the client',
+          'Read from the database, then populate the cache',
+          'Wait for the cache to refill itself',
+          'Delete the cached key',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'Kafka consumers are at-least-once by default. That means consumers must be…',
+        options: ['Fast', 'Idempotent', 'Single-threaded', 'Transactional'],
+        answer: 1,
+      },
+      {
+        q: 'A dead-letter queue (DLQ) is used to…',
+        options: [
+          'Slow down consumers',
+          'Store messages that repeatedly fail processing so the pipeline keeps flowing',
+          'Duplicate messages for safety',
+          'Compress old messages',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'Snowflake is best described as…',
+        options: [
+          'A message broker',
+          'A managed cloud SQL data warehouse',
+          'A NoSQL database',
+          'A stream-processing framework',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'Delivering a Web Push notification requires…',
+        options: [
+          'Only an API key',
+          'VAPID keys, a browser service worker, and a push subscription endpoint',
+          'An SMTP server',
+          'A WebSocket connection per user',
+        ],
+        answer: 1,
+      },
+    ],
+  },
+  {
+    name: 'Week 4',
+    theme: 'Capstone: Production Backend',
+    blurb:
+      'Integrate everything into one portfolio project: a JWT-secured REST API backed by Postgres, an event pipeline through Kafka feeding a notification service and a Snowflake/Databricks analytics path, containerized and observable.',
+    days: [
+      {
+        title: 'Capstone kickoff + auth (JWT)',
+        goal: 'Scope the capstone and add real authentication: register/login with bcrypt + JWT-protected routes.',
+        topics: ['golang-jwt', 'bcrypt password hashing', 'Auth middleware', 'Claims & expiry'],
+        exercise:
+          'Add POST /register and POST /login (bcrypt-stored passwords, JWT issued on login) and protect the notes routes with auth middleware.',
+        tasks: [
+          'Implement register + login with bcrypt',
+          'Issue and verify JWTs',
+          'Protect notes routes via auth middleware',
+        ],
+        resources: [
+          { label: 'golang-jwt', url: 'https://github.com/golang-jwt/jwt' },
+          { label: 'golang.org/x/crypto/bcrypt', url: 'https://pkg.go.dev/golang.org/x/crypto/bcrypt' },
+        ],
+      },
+      {
+        title: 'Event pipeline: API → Kafka → workers',
+        goal: 'Wire the full event flow: API publishes domain events, separate worker services consume them.',
+        topics: ['Event schema design', 'Producer with delivery guarantees', 'Separate worker binary', 'Consumer groups per service'],
+        exercise:
+          'Publish user.created and note.created events; build a second Go binary (worker) that consumes them in its own consumer group.',
+        tasks: [
+          'Define event JSON schemas with version field',
+          'Extract worker into its own cmd/ binary',
+          'Verify events flow end to end locally',
+        ],
+        resources: [
+          { label: 'Project layout convention', url: 'https://go.dev/doc/modules/layout' },
+          { label: 'Kafka consumer groups', url: 'https://kafka.apache.org/documentation/#distributionimpl' },
+        ],
+      },
+      {
+        title: 'Notification service',
+        goal: 'Build the capstone\u2019s notification worker: web push + email with retry, dedupe and user preferences.',
+        topics: ['Web Push in Go', 'Retry & dedupe', 'User preferences table', 'Testing pushes locally'],
+        exercise:
+          'Extend the worker: on task.due events send a Web Push (use web-push-go + a test subscription) and fall back to email if push fails.',
+        tasks: [
+          'Generate VAPID keys and implement web push',
+          'Store push subscriptions in Postgres',
+          'Add retry + fallback email path',
+        ],
+        resources: [
+          { label: 'SherClockHolmes/webpush-go', url: 'https://github.com/SherClockHolmes/webpush-go' },
+          { label: 'Web Push: browser support & debugging', url: 'https://web.dev/articles/push-notifications' },
+        ],
+      },
+      {
+        title: 'Analytics pipeline to Snowflake/Databricks',
+        goal: 'Close the loop with the data platform: land API events where analysts can query them.',
+        topics: ['Event enrichment consumer', 'Batching events to files', 'Snowflake load path', 'Databricks/Delta path'],
+        exercise:
+          'Write a consumer that batches note.created events into daily Parquet/CSV files and loads them into a Snowflake table; document the equivalent Databricks path.',
+        tasks: [
+          'Batch events into hourly/daily files',
+          'Load a day of events into Snowflake',
+          'Query events-per-user in the warehouse',
+        ],
+        resources: [
+          { label: 'Snowflake Go driver', url: 'https://github.com/snowflakedb/gosnowflake' },
+          { label: 'Apache Parquet (Go)', url: 'https://github.com/parquet-go/parquet-go' },
+        ],
+      },
+      {
+        title: 'Docker & deployment',
+        goal: 'Ship the whole stack: multi-stage builds, one docker-compose up, healthchecks.',
+        topics: ['Multi-stage Dockerfile', 'docker-compose services', 'Healthchecks & depends_on', 'Env/secrets handling'],
+        exercise:
+          'Write multi-stage Dockerfiles for the API and workers; compose the full stack (API, Postgres, Redis, Kafka, workers) and bring it up with one command.',
+        tasks: [
+          'Write a multi-stage Dockerfile (final image < 30MB)',
+          'Compose all services with healthchecks',
+          'Run the full stack from a clean clone',
+        ],
+        resources: [
+          { label: 'Dockerfile best practices', url: 'https://docs.docker.com/build/building/best-practices/' },
+          { label: 'Compose file reference', url: 'https://docs.docker.com/compose/compose-file/' },
+        ],
+      },
+      {
+        title: 'Observability & hardening',
+        goal: 'Make it operable: structured logs, metrics, timeouts on every layer.',
+        topics: ['slog structured logging', 'Prometheus metrics', 'Server timeouts', 'pprof basics'],
+        exercise:
+          'Switch all logging to slog (JSON), add /metrics with prometheus/client_golang, and set Read/Write timeouts + request timeouts on the server.',
+        tasks: [
+          'Convert logging to structured slog',
+          'Expose /metrics and graph a counter locally',
+          'Add server + per-request timeouts',
+        ],
+        resources: [
+          { label: 'log/slog', url: 'https://pkg.go.dev/log/slog' },
+          { label: 'prometheus/client_golang', url: 'https://github.com/prometheus/client_golang' },
+        ],
+      },
+      {
+        title: 'Ship it: docs, load test & retro',
+        goal: 'Turn the capstone into a portfolio piece: README, API docs, a load test, and an honest retro.',
+        topics: ['README & architecture diagram', 'OpenAPI / endpoint docs', 'Load testing (k6/vegeta)', 'Month retrospective'],
+        exercise:
+          'Write the README with an architecture diagram, document every endpoint, run a k6 load test against /notes, then re-take all four quizzes.',
+        tasks: [
+          'Write README with architecture diagram',
+          'Load test the API and note p95 latency',
+          'Final review: redo all quizzes + list next steps',
+        ],
+        resources: [
+          { label: 'k6 load testing', url: 'https://grafana.com/docs/k6/latest/' },
+          { label: 'Effective Go', url: 'https://go.dev/doc/effective_go' },
+        ],
+      },
+    ],
+    quiz: [
+      {
+        q: 'Passwords should be stored using…',
+        options: ['SHA-256', 'bcrypt/argon2 with a salt', 'AES encryption', 'Base64'],
+        answer: 1,
+      },
+      {
+        q: 'Verifying a JWT means…',
+        options: [
+          'Decrypting its payload',
+          'Checking its signature against the secret/public key (plus expiry & claims)',
+          'Asking the database',
+          'Base64-decoding it',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'Why use a multi-stage Dockerfile for a Go service?',
+        options: [
+          'To compile faster',
+          'To build with the full toolchain but ship a tiny final image without it',
+          'To enable hot reload',
+          'To support multiple OSes',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'Graceful shutdown exists so that on SIGTERM the server…',
+        options: [
+          'Immediately exits to free memory',
+          'Stops accepting new requests and finishes in-flight ones',
+          'Restarts itself',
+          'Drops the database',
+        ],
+        answer: 1,
+      },
+      {
+        q: 'Why prefer structured (slog JSON) logging over fmt.Println in production?',
+        options: [
+          'It is faster to write',
+          'Machines/log platforms can query and aggregate key-value fields',
+          'It uses less memory',
+          'It is required by net/http',
+        ],
+        answer: 1,
+      },
+    ],
+  },
+];
+
+const totalTasks = plan.reduce((n, w) => n + w.days.reduce((m, d) => m + d.tasks.length, 0), 0);
+const totalDays = plan.reduce((n, w) => n + w.days.length, 0);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Go Backend in 30 Days: Interactive Plan</title>
+    <meta
+      name="description"
+      content="A 4-week interactive plan to learn Go for backend engineering: HTTP APIs, notifications, Kafka, Snowflake and Databricks."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">4 weeks · {totalDays} days · {totalTasks} checkable tasks</p>
+        <h1>Learn <span class="go">Go</span> for Backend in One Month</h1>
+        <p class="subtitle">
+          From zero to a production-shaped backend: HTTP APIs, notification systems, Kafka pipelines, and data platforms
+          (Snowflake & Databricks). Progress is saved in your browser.
+        </p>
+        <div class="overall" aria-label="Overall progress">
+          <div class="overall-bar"><div class="overall-fill" id="overall-fill"></div></div>
+          <span class="overall-label" id="overall-label">0%</span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" id="tabs" aria-label="Weeks">
+      {plan.map((week, wi) => (
+        <button class="tab" data-tab={wi} type="button">
+          <span class="tab-name">{week.name}</span>
+          <span class="tab-theme">{week.theme}</span>
+          <span class="tab-progress" data-week-progress={wi}>0%</span>
+        </button>
+      ))}
+    </nav>
+
+    <main id="main">
+      {plan.map((week, wi) => (
+        <section class="week-panel" data-panel={wi} hidden={wi !== 0}>
+          <div class="week-head">
+            <h2>{week.name} · {week.theme}</h2>
+            <p class="blurb">{week.blurb}</p>
+          </div>
+
+          <div class="days">
+            {week.days.map((day, di) => (
+              <article class="day" data-day={`${wi}-${di}`}>
+                <div class="day-head">
+                  <span class="day-num">Day {wi * 7 + di + 1}</span>
+                  <h3>{day.title}</h3>
+                  <span class="day-done-badge" data-day-badge={`${wi}-${di}`} hidden>✓ done</span>
+                </div>
+                <p class="goal"><strong>Goal:</strong> {day.goal}</p>
+                <div class="chips">
+                  {day.topics.map((t) => <span class="chip">{t}</span>)}
+                </div>
+                <div class="exercise">
+                  <span class="exercise-label">Hands-on</span>
+                  <p>{day.exercise}</p>
+                </div>
+                <ul class="tasks">
+                  {day.tasks.map((task, ti) => (
+                    <li>
+                      <label class="task">
+                        <input type="checkbox" data-task={`${wi}-${di}-${ti}`} />
+                        <span>{task}</span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+                <div class="resources">
+                  {day.resources.map((r) => (
+                    <a class="resource" href={r.url} target="_blank" rel="noopener noreferrer">{r.label} ↗</a>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div class="quiz">
+            <button class="quiz-toggle" data-quiz-toggle={wi} type="button" aria-expanded="false">
+              <span>{week.name} quiz: {week.quiz.length} questions</span>
+              <span class="quiz-score" data-quiz-score={wi}></span>
+            </button>
+            <div class="quiz-body" data-quiz-body={wi} hidden>
+              {week.quiz.map((q, qi) => (
+                <fieldset class="question" data-question={`${wi}-${qi}`} data-answer={q.answer}>
+                  <legend>{qi + 1}. {q.q}</legend>
+                  <div class="options">
+                    {q.options.map((opt, oi) => (
+                      <button class="option" type="button" data-opt={`${wi}-${qi}-${oi}`}>{opt}</button>
+                    ))}
+                  </div>
+                </fieldset>
+              ))}
+              <div class="quiz-actions">
+                <button class="btn btn-primary" data-quiz-check={wi} type="button">Check answers</button>
+                <button class="btn" data-quiz-retry={wi} type="button">Retry</button>
+              </div>
+              <p class="quiz-result" data-quiz-result={wi}></p>
+            </div>
+          </div>
+
+          <div class="week-nav">
+            <button class="btn" data-nav={wi - 1} type="button" disabled={wi === 0}>← Previous week</button>
+            <button class="btn" data-nav={wi + 1} type="button" disabled={wi === plan.length - 1}>Next week →</button>
+          </div>
+        </section>
+      ))}
+    </main>
+
+    <footer>
+      <p>Tip: check off tasks as you go. Everything is saved locally in this browser.</p>
+      <button class="btn btn-danger" id="reset" type="button">Reset all progress</button>
+    </footer>
+
+    <script>
+      const STORAGE_KEY = 'go-backend-plan-v1';
+
+      function loadState() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {};
+        } catch {
+          return {};
+        }
+      }
+      const state = loadState();
+      state.tasks ||= {};
+      state.quiz ||= {};
+      state.currentWeek ??= 0;
+
+      function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function taskKey(dayEl, input) {
+        return input.dataset.task;
+      }
+
+      // ---- Progress ----
+      const dayEls = Array.from(document.querySelectorAll('[data-day]'));
+      const overallFill = document.getElementById('overall-fill');
+      const overallLabel = document.getElementById('overall-label');
+      const tabProgressEls = Object.fromEntries(
+        Array.from(document.querySelectorAll('[data-week-progress]')).map((el) => [el.dataset.weekProgress, el])
+      );
+      const dayBadges = Object.fromEntries(
+        Array.from(document.querySelectorAll('[data-day-badge]')).map((el) => [el.dataset.dayBadge, el])
+      );
+
+      function refreshProgress() {
+        let doneTotal = 0;
+        let total = 0;
+        const weekTotals = {};
+        for (const dayEl of dayEls) {
+          const inputs = Array.from(dayEl.querySelectorAll('input[type="checkbox"]'));
+          const done = inputs.filter((i) => i.checked).length;
+          const [wi] = dayEl.dataset.day.split('-');
+          weekTotals[wi] ||= { done: 0, total: 0 };
+          weekTotals[wi].done += done;
+          weekTotals[wi].total += inputs.length;
+          doneTotal += done;
+          total += inputs.length;
+          const complete = inputs.length > 0 && done === inputs.length;
+          dayEl.classList.toggle('complete', complete);
+          const badge = dayBadges[dayEl.dataset.day];
+          if (badge) badge.hidden = !complete;
+        }
+        for (const [wi, el] of Object.entries(tabProgressEls)) {
+          const w = weekTotals[wi] || { done: 0, total: 1 };
+          el.textContent = w.total ? `${Math.round((w.done / w.total) * 100)}%` : '0%';
+        }
+        const pct = total ? Math.round((doneTotal / total) * 100) : 0;
+        overallFill.style.transform = `scaleX(${pct / 100})`;
+        overallLabel.textContent = pct + '%';
+      }
+
+      document.querySelectorAll('input[type="checkbox"][data-task]').forEach((input) => {
+        if (state.tasks[taskKey(input.closest('[data-day]'), input)]) input.checked = true;
+        input.addEventListener('change', () => {
+          state.tasks[input.dataset.task] = input.checked;
+          if (!input.checked) delete state.tasks[input.dataset.task];
+          save();
+          refreshProgress();
+        });
+      });
+      refreshProgress();
+
+      // ---- Week tabs & navigation ----
+      const panels = Array.from(document.querySelectorAll('[data-panel]'));
+      const tabs = Array.from(document.querySelectorAll('.tab'));
+
+      let switching = false;
+      function showWeek(wi) {
+        if (switching) return;
+        switching = true;
+        state.currentWeek = wi;
+        save();
+        // isolate layout thrash: hide all, then show one in next frame
+        panels.forEach((p) => (p.hidden = Number(p.dataset.panel) !== wi));
+        tabs.forEach((t) => t.classList.toggle('active', Number(t.dataset.tab) === wi));
+        const activePanel = panels[wi];
+        if (activePanel) {
+          activePanel.style.animation = 'none';
+          void activePanel.offsetHeight;
+          activePanel.style.animation = '';
+        }
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const nearTop = window.scrollY < 80;
+        if (!nearTop) window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+        // release lock after panel animation + scroll settle
+        setTimeout(() => { switching = false; }, 260);
+      }
+
+      // sticky tabs hairline + cross-platform helper
+      const tabsEl = document.getElementById('tabs');
+      if (tabsEl && 'IntersectionObserver' in window) {
+        const sentinel = document.createElement('div');
+        sentinel.setAttribute('aria-hidden', 'true');
+        sentinel.style.cssText = 'position:absolute;top:0;height:1px;width:1px;pointer-events:none;';
+        document.body.prepend(sentinel);
+        new IntersectionObserver(([e]) => tabsEl.classList.toggle('is-stuck', !e.isIntersecting), { threshold: 0 }).observe(sentinel);
+      }
+      tabs.forEach((t) => t.addEventListener('click', () => showWeek(Number(t.dataset.tab))));
+      document.querySelectorAll('[data-nav]').forEach((btn) =>
+        btn.addEventListener('click', () => {
+          const target = Number(btn.dataset.nav);
+          if (target >= 0 && target < panels.length) showWeek(target);
+        })
+      );
+      showWeek(Number(state.currentWeek) || 0);
+
+      // ---- Quizzes ----
+      for (let wi = 0; wi < panels.length; wi++) {
+        const toggle = document.querySelector(`[data-quiz-toggle="${wi}"]`);
+        const body = document.querySelector(`[data-quiz-body="${wi}"]`);
+        const scoreBadge = document.querySelector(`[data-quiz-score="${wi}"]`);
+        const resultEl = document.querySelector(`[data-quiz-result="${wi}"]`);
+        const checkBtn = body.querySelector(`[data-quiz-check="${wi}"]`);
+        const retryBtn = body.querySelector(`[data-quiz-retry="${wi}"]`);
+        const questions = Array.from(body.querySelectorAll('[data-question]'));
+
+        toggle.addEventListener('click', () => {
+          const open = body.hidden;
+          body.hidden = !open;
+          toggle.setAttribute('aria-expanded', String(open));
+        });
+
+        function clearMarks() {
+          questions.forEach((q) => {
+            q.classList.remove('correct', 'incorrect');
+            q.querySelectorAll('.option').forEach((o) => o.classList.remove('selected', 'right', 'wrong'));
+          });
+          resultEl.textContent = '';
+        }
+
+        function restore() {
+          const saved = state.quiz[wi];
+          clearMarks();
+          if (!saved || !Array.isArray(saved.answers)) return;
+          saved.answers.forEach((sel, qi) => {
+            if (sel == null) return;
+            const opt = body.querySelector(`[data-opt="${wi}-${qi}-${sel}"]`);
+            if (opt) opt.classList.add('selected');
+          });
+          if (saved.done) grade();
+        }
+
+        function grade() {
+          const answers = questions.map((q) => {
+            const sel = q.querySelector('.option.selected');
+            return sel ? Number(sel.dataset.opt.split('-')[2]) : null;
+          });
+          let correct = 0;
+          questions.forEach((q, qi) => {
+            const right = Number(q.dataset.answer);
+            const sel = answers[qi];
+            q.querySelectorAll('.option').forEach((o) => {
+              const oi = Number(o.dataset.opt.split('-')[2]);
+              if (oi === right) o.classList.add('right');
+              if (sel != null && oi === sel && sel !== right) o.classList.add('wrong');
+            });
+            q.classList.add(sel === right ? 'correct' : 'incorrect');
+            if (sel === right) correct++;
+          });
+          const pct = Math.round((correct / questions.length) * 100);
+          resultEl.textContent = `You scored ${correct}/${questions.length} (${pct}%).` +
+            (pct === 100 ? ' Perfect. Move on! 🎉' : pct >= 60 ? ' Solid. Review the misses above.' : ' Revisit this week’s days, then retry.');
+          scoreBadge.textContent = `${correct}/${questions.length}`;
+          state.quiz[wi] = { answers, done: true, score: correct };
+          save();
+        }
+
+        body.querySelectorAll('.option').forEach((opt) =>
+          opt.addEventListener('click', () => {
+            const [, qiStr] = opt.dataset.opt.split('-');
+            const q = body.querySelector(`[data-question="${wi}-${qiStr}"]`);
+            q.querySelectorAll('.option').forEach((o) => o.classList.remove('selected'));
+            opt.classList.add('selected');
+          })
+        );
+        checkBtn.addEventListener('click', grade);
+        retryBtn.addEventListener('click', () => {
+          delete state.quiz[wi];
+          scoreBadge.textContent = '';
+          save();
+          clearMarks();
+          body.querySelectorAll('.option').forEach((o) => o.classList.remove('selected'));
+        });
+
+        restore();
+      }
+
+      // ---- Reset ----
+      document.getElementById('reset').addEventListener('click', () => {
+        if (!confirm('Reset all progress and quiz results?')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  /* Supermemory-editorial · YC calm · full-bleed · Geist fluid scale · unified interaction */
+  :root {
+    --bg: #ffffff;
+    --surface: #f8f8f7;
+    --line: rgba(17, 17, 17, 0.08);
+    --line-strong: rgba(17, 17, 17, 0.13);
+    --text: #111111;
+    --text-soft: #2a2a2a;
+    --muted: #6b6b6b;
+    --faint: #9a9a96;
+    --accent: #111111;
+    --accent-hover: #1f1f1f;
+    --green: #1a7f37;
+    --green-soft: #f0f6f2;
+    --green-border: #c8ddd2;
+    --red: #9b3a2e;
+    --red-soft: #fdf2f0;
+    --red-border: #e8c4bf;
+    --radius-card: 10px;
+    --radius-inner: 6px;
+    --radius-pill: 999px;
+    --ease: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    --font: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 16px;
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+    overflow-y: scroll;
+  }
+  html:focus-within { scroll-behavior: smooth; }
+  /* prevent scroll chaining bounce that reads as shift */
+  body { overscroll-behavior-y: none; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: clamp(14px, 0.95vw + 11px, 15px);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  ::selection { background: #111; color: #fff; }
+
+  /* ---- Font hierarchy: fluid, distinct per heading level ---- */
+  h1 {
+    margin: 0 0 12px;
+    font-family: var(--font);
+    font-size: clamp(28px, 4vw + 12px, 42px);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: var(--text);
+  }
+  .week-head h2 {
+    margin: 0 0 6px;
+    font-family: var(--font);
+    font-size: clamp(18px, 1.6vw + 12px, 22px);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+    color: var(--text);
+  }
+  .day h3 {
+    margin: 0;
+    font-family: var(--font);
+    font-size: clamp(14px, 0.6vw + 12px, 15.5px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+    color: var(--text);
+  }
+  .question legend {
+    font-family: var(--font);
+    font-weight: 600;
+    font-size: 13.5px;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+    padding: 0 4px;
+  }
+
+  /* ---- Header: full-bleed edge-to-edge ---- */
+  .hero {
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: clamp(32px, 5vw, 56px) clamp(16px, 4vw, 40px) clamp(20px, 3vw, 28px);
+    width: 100%;
+  }
+  .hero-inner {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: clamp(10px, 0.4vw + 9px, 11px);
+    font-weight: 400;
+    color: var(--faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+  }
+  .go { font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+  .subtitle {
+    color: var(--muted);
+    max-width: 560px;
+    margin: 0 0 22px;
+    font-size: clamp(14px, 0.6vw + 12px, 15px);
+    line-height: 1.6;
+    font-weight: 400;
+  }
+  .overall { display: flex; align-items: center; gap: 12px; max-width: 640px; }
+  .overall-bar {
+    flex: 1;
+    height: 2px;
+    background: var(--line);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .overall-fill {
+    height: 100%;
+    width: 100%;
+    background: var(--accent);
+    border-radius: var(--radius-pill);
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+    transition: transform 420ms var(--ease-out);
+  }
+  .overall-label {
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 11px;
+    min-width: 36px;
+    color: var(--faint);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Week tabs: full-bleed, sticky, cross-platform scroll ---- */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 14px clamp(16px, 4vw, 40px) 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    border-bottom: 1px solid transparent;
+    transform: translateZ(0);
+    contain: paint;
+    overscroll-behavior-x: contain;
+  }
+  .tabs.is-stuck { border-bottom-color: var(--line); }
+  @media (max-width: 900px) {
+    .tabs {
+      grid-template-columns: none;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
+      padding-bottom: 12px;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex: 0 0 68%; min-width: 220px; }
+  }
+  @media (max-width: 520px) { .tab { flex-basis: 82%; } }
+  .tab {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-inner);
+    color: var(--text);
+    padding: 12px 14px 11px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-family: var(--font);
+    transition: background var(--ease), border-color var(--ease), color var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .tab:hover { background: var(--surface); border-color: var(--line); }
+  .tab:active { background: color-mix(in srgb, var(--surface) 85%, var(--line) 15%); }
+  .tab:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+  .tab.active .tab-theme { color: rgba(255, 255, 255, 0.62); }
+  .tab.active .tab-progress { color: rgba(255, 255, 255, 0.9); }
+  .tab-name { font-weight: 600; font-size: 13.5px; letter-spacing: -0.01em; line-height: 1.2; }
+  .tab-theme { color: var(--muted); font-size: 11.5px; line-height: 1.35; font-weight: 400; }
+  .tab-progress {
+    font-family: var(--mono);
+    color: var(--faint);
+    font-size: 10.5px;
+    font-weight: 400;
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Week panel: full-bleed, no centered measure, shift-free ---- */
+  main {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 10px clamp(16px, 4vw, 40px) 32px;
+    contain: layout;
+  }
+  .week-panel { animation: panelIn 180ms var(--ease-out); contain: layout style; will-change: opacity; }
+  .week-panel[hidden] { display: none !important; animation: none !important; }
+  @keyframes panelIn { from { opacity: 0; } to { opacity: 1; } }
+  .week-head { padding: 20px 0 0; }
+  .week-head h2 { margin-bottom: 6px; }
+  .blurb {
+    color: var(--muted);
+    margin: 0 0 18px;
+    max-width: 64ch;
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* ---- Days: full-bleed editorial, responsive grid uses entire screen ---- */
+  .days {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--line);
+    width: 100%;
+  }
+  @media (min-width: 1100px) {
+    .days {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border-top: none;
+      gap: 16px;
+      border: none;
+    }
+    .day { border: 1px solid var(--line); border-radius: var(--radius-card); padding: 20px 20px 18px; }
+    .day:last-child { border-bottom: 1px solid var(--line); }
+  }
+  .day {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    padding: 22px 0 20px;
+    transition: background var(--ease), border-color var(--ease);
+  }
+  @media (max-width: 1099px) {
+    .day:hover { background: rgba(248, 248, 247, 0.6); }
+  }
+  .day.complete { background: #fbfcfb; }
+  @media (min-width: 1100px) { .day.complete { background: #fbfcfb; border-color: var(--green-border); } }
+  .day-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .day-num {
+    font-family: var(--mono);
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 10px;
+    font-weight: 400;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  .day.complete .day-num {
+    background: var(--green-soft);
+    color: var(--green);
+    border-color: var(--green-border);
+  }
+  .day-done-badge {
+    font-family: var(--mono);
+    color: var(--green);
+    background: var(--green-soft);
+    border: 1px solid var(--green-border);
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 9px;
+    border-radius: var(--radius-pill);
+    margin-left: auto;
+    letter-spacing: 0.02em;
+  }
+  .goal {
+    color: var(--muted);
+    margin: 10px 0 12px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .goal strong { color: var(--text-soft); font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .chip {
+    font-family: var(--mono);
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 10.5px;
+    font-weight: 400;
+    padding: 3px 8px;
+    border-radius: var(--radius-inner);
+    letter-spacing: 0.01em;
+    transition: border-color var(--ease), color var(--ease);
+  }
+  .chip:hover { border-color: var(--line-strong); color: var(--text-soft); }
+  .exercise {
+    background: transparent;
+    border: none;
+    border-left: 1.5px solid var(--line);
+    border-radius: 0;
+    padding: 2px 0 2px 14px;
+    margin-bottom: 14px;
+  }
+  .exercise-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .exercise p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-soft); }
+  .tasks { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 7px; }
+  .task {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-soft);
+    padding: 2px 0;
+    transition: color var(--ease);
+  }
+  .task:hover { color: var(--text); }
+  .task input {
+    accent-color: var(--accent);
+    margin-top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .task input:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .task input:checked + span { color: var(--faint); text-decoration: line-through; text-decoration-color: rgba(17,17,17,0.18); }
+  .resources { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+  .resource {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--line-strong);
+    text-decoration-thickness: 1.2px;
+    background: none;
+    border: none;
+    padding: 1px 0;
+    border-radius: 0;
+    transition: color var(--ease), text-decoration-color var(--ease), opacity var(--ease);
+    letter-spacing: -0.01em;
+  }
+  .resource:hover { color: var(--text); text-decoration-color: var(--text); }
+  .resource:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; border-radius: 2px; }
+
+  /* ---- Quiz: full-bleed aware ---- */
+  .quiz {
+    margin-top: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    width: 100%;
+  }
+  .quiz-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font: inherit;
+    font-family: var(--font);
+    font-weight: 500;
+    font-size: 13.5px;
+    letter-spacing: -0.01em;
+    padding: 13px 16px;
+    cursor: pointer;
+    transition: background var(--ease);
+  }
+  .quiz-toggle:hover { background: rgba(17,17,17,0.03); }
+  .quiz-toggle:active { background: rgba(17,17,17,0.05); }
+  .quiz-toggle:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+  .quiz-score {
+    font-family: var(--mono);
+    color: var(--faint);
+    font-size: 11.5px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .quiz-body { padding: 14px 16px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+  .question {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-inner);
+    margin: 0 0 10px;
+    padding: 12px 14px;
+    background: var(--bg);
+    transition: border-color var(--ease), background var(--ease);
+  }
+  .question.correct { border-color: var(--green-border); background: var(--green-soft); }
+  .question.incorrect { border-color: var(--red-border); background: var(--red-soft); }
+  .options { display: grid; gap: 6px; margin-top: 8px; }
+  .option {
+    text-align: left;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-inner);
+    color: var(--text-soft);
+    font: inherit;
+    font-family: var(--font);
+    font-size: 13.5px;
+    line-height: 1.45;
+    padding: 9px 12px;
+    cursor: pointer;
+    transition: background var(--ease), border-color var(--ease), color var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .option:hover { border-color: var(--line-strong); background: var(--surface); }
+  .option:active { background: color-mix(in srgb, var(--surface) 80%, var(--line) 20%); }
+  .option:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .option.selected { border-color: var(--accent); background: var(--accent); color: #ffffff; }
+  .option.right {
+    border-color: var(--green-border);
+    background: var(--green-soft);
+    color: var(--green);
+    font-weight: 500;
+  }
+  .option.wrong {
+    border-color: var(--red-border);
+    background: var(--red-soft);
+    color: var(--red);
+  }
+  .option.selected.right { background: var(--green); border-color: var(--green); color: #fff; }
+  .quiz-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .quiz-result { color: var(--muted); font-weight: 400; font-size: 13px; margin: 10px 0 0; line-height: 1.5; }
+
+  /* ---- Buttons: unified interaction system ---- */
+  .week-nav { display: flex; justify-content: space-between; margin-top: 22px; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    appearance: none;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-soft);
+    border-radius: var(--radius-pill);
+    font: inherit;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 10px 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: background var(--ease), border-color var(--ease), color var(--ease), opacity var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .btn:hover:not(:disabled) { border-color: var(--line-strong); color: var(--text); background: var(--surface); }
+  .btn:active:not(:disabled) { background: color-mix(in srgb, var(--surface) 75%, var(--line) 25%); }
+  .btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .btn:disabled { opacity: 0.32; cursor: not-allowed; }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: #ffffff; }
+  .btn-primary:active:not(:disabled) { background: #000; border-color: #000; }
+  .btn-danger { color: var(--faint); border-color: var(--line); background: transparent; }
+  .btn-danger:hover:not(:disabled) { border-color: var(--red-border); background: var(--red-soft); color: var(--red); }
+
+  footer {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 16px clamp(16px, 4vw, 40px) max(32px, env(safe-area-inset-bottom));
+    color: var(--faint);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+  }
+  footer p { margin: 0; color: var(--faint); font-weight: 400; line-height: 1.5; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
